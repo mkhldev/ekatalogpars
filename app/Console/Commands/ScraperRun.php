@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Scrape\EKatalogParser;
+use App\Services\Scrape\Helper;
 use App\Services\Scrape\Persist;
 use Illuminate\Console\Command;
 
@@ -23,6 +24,7 @@ class ScraperRun extends Command
         $this->output->writeln($this->description);
 
         $parser = new EKatalogParser();
+        $helper = new Helper();
 
         // =================================================================
         // home
@@ -44,30 +46,22 @@ class ScraperRun extends Command
         // categories from home
         // =================================================================
 
-        foreach ($data['catalog'] as $catalog) {
-            if (isset($catalog['sublist'])) {
-                $catalog = array_merge([$catalog], $catalog['sublist']);
-                unset($catalog[0]['sublist']);
+        $catalog = $helper->getPlainLinksFromCategory($data['catalog']);
+        foreach ($catalog as $item) {
+            if (!$categoryId = $helper->getCategoryIdFromLink($item['href'])) {
+                dd('broken_category', $item);
+            }
+            $categoryPath = $helper->getCategoryPathByCategoryId($categoryId);
+
+            $isSaved = true;
+            if (!$cData = Persist::load($categoryPath)) {
+                $this->output->writeln(' - ' . $categoryPath);
+                $cData = $parser->category($item['href']);
+                $isSaved = false;
             }
 
-            foreach ($catalog as $item) {
-                $exploded = explode('/', rtrim($item['href'], '/'));
-                $categoryId = end($exploded);
-                if (!is_numeric($categoryId)) {
-                    dd('category_id_broken', $item);
-                }
-                $categoryPath = 'categories/' . $categoryId . '.json';
-
-                $isSaved = true;
-                if (!$cData = Persist::load($categoryPath)) {
-                    $this->output->writeln(' - ' . $categoryPath);
-                    $cData = $parser->category($item['href']);
-                    $isSaved = false;
-                }
-
-                if (!$isSaved) {
-                    Persist::save($categoryPath, $cData);
-                }
+            if (!$isSaved) {
+                Persist::save($categoryPath, $cData);
             }
         }
 
