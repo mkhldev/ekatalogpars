@@ -549,13 +549,18 @@ class EKatalogParser
      */
     public function getDescriptionsProductLinksList($uri): array
     {
+        if (!str_starts_with($uri, $this->url)) {
+            $uri = $this->url . ltrim($uri, '/');
+        }
+
         $crawler = $this->client->get($uri);
+
         $data = [];
         $data['head'] = $this->getHeadData($crawler);
         $data['breadcrumbs'] = $this->getBreadcrumbs($crawler);
         $data['presets'] = $this->getPresets($crawler);
 
-        $divs = $crawler->filter(".main-part-content > div")->each(function (Crawler $node) {
+        $divs = $crawler->filter('.main-part-content > div')->each(function (Crawler $node) {
             return $node;
         });
 
@@ -564,13 +569,13 @@ class EKatalogParser
 
         foreach ($divs as $node) {
             if ($node->attr('class') === 'map-brand') {
-                $cur = $node->text();
+                $cur = trim($node->text());
                 $data['models'][$cur] = ['brand' => $cur, 'models' => []];
             } elseif ($node->attr('class') === 'map-models') {
                 $data['models'][$cur]['models'] = $node->filter('a')->each(function (Crawler $a) {
                     return [
-                        'title' => $a->text(),
-                        'href' => $a->link()->getUri(),
+                        'title' => trim($a->text()),
+                        'href' => trim($a->link()->getUri()),
                     ];
                 });
             }

@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace App\Services\Scrape;
 
+use App\Services\Scrape\Entity\Category;
+use App\Services\Scrape\ValueObject\Good;
+use Webmozart\Assert\Assert;
+
 final class Helper
 {
     /**
@@ -11,7 +15,7 @@ final class Helper
      * @param array $data Данные каталога
      * @return array Массив массивов
      */
-    public function getPlainLinksFromCategory(array $data): array
+    public static function getPlainLinksFromCategory(array $data): array
     {
         $result = [];
 
@@ -24,7 +28,7 @@ final class Helper
 
         foreach ($data as $item) {
             if (is_array($item)) {
-                $result = array_merge($result, $this->getPlainLinksFromCategory($item));
+                $result = array_merge($result, self::getPlainLinksFromCategory($item));
             }
         }
 
@@ -36,7 +40,7 @@ final class Helper
      * @param string $link
      * @return int|null Идентификатор или NULL
      */
-    public function getCategoryIdFromLink(string $link): ?int
+    public static function getCategoryIdFromLink(string $link): ?int
     {
         if (preg_match('~(/k(?<k>\d+)\.htm|/list/(?<l>\d+)/)~i', $link, $match)) {
             return (int) (($match['k'] ?? 0) ?: ($match['l'] ?? 0));
@@ -46,12 +50,62 @@ final class Helper
     }
 
     /**
-     * Возвращает путь до файла сохранения категории по его идентификатору
-     * @param int $id
-     * @return string
+     * @param Category $category
+     * @param EKatalogParser|null $parser
+     * @return array
      */
-    public function getCategoryPathByCategoryId(int $id): string
+    public static function getCategoryData(
+        Category $category,
+        ?EKatalogParser $parser = null,
+    ): array
     {
-        return 'categories/' . $id . '.json';
+        if (!$data = Persist::load($category->getCategoryPath())) {
+            Assert::stringNotEmpty($category->getLink());
+            Assert::notNull($parser);
+
+            $data = $parser->category($category->getLink());
+            Persist::save($category->getCategoryPath(), $data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param Category $category
+     * @param EKatalogParser|null $parser
+     * @param string|null $downloadUrl
+     * @return array
+     */
+    public static function getCategoryModelData(
+        Category $category,
+        ?EKatalogParser $parser = null,
+        ?string $downloadUrl = null,
+    ): array
+    {
+        if (!$data = Persist::load($category->getModelsPath())) {
+            Assert::stringNotEmpty($category->getLink());
+            Assert::notNull($parser);
+            Assert::stringNotEmpty($downloadUrl);
+
+            $data = $parser->getDescriptionsProductLinksList($downloadUrl);
+            Persist::save($category->getModelsPath(), $data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param Category $category
+     * @param Good $good
+     * @param EKatalogParser|null $parser
+     * @return array
+     */
+    public static function getGoodData(
+        Category $category,
+        Good $good,
+        ?EKatalogParser $parser = null,
+    ): array
+    {
+        return [];
     }
 }

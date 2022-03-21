@@ -16,15 +16,22 @@ class Persist
 
     public static function load(string $path): array
     {
-        if (self::isSaved($path)) {
+        try {
             $data = Storage::get(self::$prefix . $path);
-            try {
-                $data = json_decode($data, true);
-            } catch (\Throwable) {
-                $data = [];
-            }
-        } else {
+            $data = json_decode($data, true);
+        } catch (\Throwable) {
             $data = [];
+        }
+
+        return $data;
+    }
+
+    public static function loadRaw(string $path): mixed
+    {
+        try {
+            $data = Storage::get(self::$prefix . $path);
+        } catch (\Throwable) {
+            $data = null;
         }
 
         return $data;

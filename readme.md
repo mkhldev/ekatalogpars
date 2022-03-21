@@ -26,3 +26,20 @@ php artisan scraper:run
 Методы парсера разбивающие страницу на элементы в файле `\App\Services\Scrape\EKatalogParser`.
 
 Дополнительные хелперы преобразующие данные в файле `\App\Services\Scrape\Helper`.
+
+### Структура
+
+Sitemap: https://kz.e-katalog.com/sitemap/sitemap-index.xml
+
+```text
+Товары в категории: https://kz.e-katalog.com/wiz_char.php?id=298, где
+298 - идентификатор категории
+```
+
+```text
+Формат пути до товара: /vendor-good-name.htm, где
+vendor - slug поставщика
+good-name - slug наименования товара
+
+Пример: https://kz.e-katalog.com/ACER-TRAVELMATE-P2-TMP214-52G.htm
+```
