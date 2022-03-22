@@ -5,10 +5,12 @@ namespace App\Console\Commands;
 use App\Services\Scrape\EKatalogParser;
 use App\Services\Scrape\Entity\Category;
 use App\Services\Scrape\Helper;
+use App\Services\Scrape\ParserFactory;
 use App\Services\Scrape\Persist;
-use App\Services\Scrape\ValueObject\Good;
+use App\Services\Scrape\ValueObject\Product;
 use Exception;
 use Illuminate\Console\Command;
+use Webmozart\Assert\Assert;
 
 class ScraperRun extends Command
 {
@@ -76,9 +78,12 @@ class ScraperRun extends Command
         // category: computers
         // =================================================================
 
-        $category = Persist::load((new Category(169, 'Fake'))->getCategoryPath());
+        $categoryId = 169;
+        $category = Persist::load((new Category($categoryId, 'Fake'))->getCategoryPath());
         $categories = Helper::getPlainLinksFromCategory($category);
         $categories = array_map([Category::class, 'createByHref'], $categories);
+        $categoryParser = ParserFactory::getByCategoryId($categoryId);
+        Assert::notNull($categoryParser);
 
         /** @var Category[] $categories */
         foreach ($categories as $item) {
@@ -90,10 +95,10 @@ class ScraperRun extends Command
             foreach ($model['models'] as $modelData) {
                 $item->setVendor($modelData['brand']);
 
-                /** @var Good[] $goods */
-                $goods = array_map([Good::class, 'create'], $modelData['models']);
-                foreach ($goods as $good) {
-                    $data = Helper::getGoodData($item, $good, $parser);
+                /** @var Product[] $products */
+                $products = array_map([Product::class, 'create'], $modelData['models']);
+                foreach ($products as $product) {
+                    $data = Helper::getProductData($item, $product, $categoryParser);
 
                     dd($data, 'todo');
                 }

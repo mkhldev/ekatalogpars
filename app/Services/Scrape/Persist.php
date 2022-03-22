@@ -17,8 +17,7 @@ class Persist
     public static function load(string $path): array
     {
         try {
-            $data = Storage::get(self::$prefix . $path);
-            $data = json_decode($data, true);
+            $data = json_decode(Persist::loadRaw($path), true);
         } catch (\Throwable) {
             $data = [];
         }
@@ -39,6 +38,11 @@ class Persist
 
     public static function save(string $path, array $data): void
     {
-        Storage::put(self::$prefix . $path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        self::saveRaw($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
+    public static function saveRaw(string $path, mixed $data): void
+    {
+        Storage::put(self::$prefix . $path, $data);
     }
 }

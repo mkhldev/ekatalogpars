@@ -37,9 +37,9 @@ Sitemap: https://kz.e-katalog.com/sitemap/sitemap-index.xml
 ```
 
 ```text
-Формат пути до товара: /vendor-good-name.htm, где
+Формат пути до товара: /vendor-product-name.htm, где
 vendor - slug поставщика
-good-name - slug наименования товара
+product-name - slug наименования товара
 
 Пример: https://kz.e-katalog.com/ACER-TRAVELMATE-P2-TMP214-52G.htm
 ```
