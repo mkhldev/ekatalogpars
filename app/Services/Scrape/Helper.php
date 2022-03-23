@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace App\Services\Scrape;
 
 use App\Services\Scrape\Entity\Category;
-use App\Services\Scrape\ValueObject\Good;
+use App\Services\Scrape\Parser\AbstractParser;
+use App\Services\Scrape\ValueObject\Product;
 use Webmozart\Assert\Assert;
 
 final class Helper
@@ -96,14 +97,14 @@ final class Helper
 
     /**
      * @param Category $category
-     * @param Good $good
-     * @param EKatalogParser|null $parser
+     * @param Product $product
+     * @param AbstractParser|null $parser
      * @return array
      */
-    public static function getGoodData(
+    public static function getProductData(
         Category $category,
-        Good $good,
-        ?EKatalogParser $parser = null,
+        Product $product,
+        ?AbstractParser $parser = null,
     ): array
     {
         return [];

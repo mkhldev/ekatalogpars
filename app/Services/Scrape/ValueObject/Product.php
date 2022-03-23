@@ -6,7 +6,7 @@ namespace App\Services\Scrape\ValueObject;
 use App\Services\Scrape\Entity\Category;
 use Webmozart\Assert\Assert;
 
-class Good
+class Product
 {
     /**
      * Конструктор класса
@@ -40,13 +40,13 @@ class Good
      * @param Category $category
      * @return string
      */
-    public function getGoodPath(Category $category): string
+    public function getProductPath(Category $category): string
     {
         Assert::stringNotEmpty($category->getVendor());
 
         $baseName = pathinfo($this->link, PATHINFO_FILENAME);
 
-        return 'goods/' . $category->getId() . '/' . $category->getVendor() . '/' . $baseName . '.json';
+        return strtolower('products/' . $category->getId() . '/' . $category->getVendor() . '/' . $baseName . '.json');
     }
 
     /**
@@ -54,12 +54,12 @@ class Good
      * @param Category $category
      * @return string
      */
-    public function getHTMLGoodPath(Category $category): string
+    public function getHTMLProductPath(Category $category): string
     {
         Assert::stringNotEmpty($category->getVendor());
 
         $baseName = pathinfo($this->link, PATHINFO_FILENAME);
 
-        return 'goods-html/' . $category->getId() . '/' . $category->getVendor() . '/' . $baseName . '.htm';
+        return strtolower('products-html/' . $category->getId() . '/' . $category->getVendor() . '/' . $baseName . '.htm');
     }
 }
