@@ -6,7 +6,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class EKatalogParser
 {
-    private string $url = 'https://kz.e-katalog.com/';
+    public string $url = 'https://kz.e-katalog.com/';
     private GoutteClient $client;
 
     public function __construct()
@@ -289,15 +289,28 @@ class EKatalogParser
             });
     }
 
+    public function getProductProperties($url): array
+    {
+        $url = ltrim($url, '/');
+        if (!str_starts_with($url, $this->url)) {
+            $url = $this->url . $url;
+        }
+
+        return $this->getProductPropertiesByHTML($this->client->get($url));
+    }
+
     /**
      * https://kz.e-katalog.com/mtools/mui_get_img_gallery.php?idg_=2175434&f_type_=IMG&callback=jQuery22402804003455135_1647072116153&_=1647072116154
      */
-    public function getProductProperties($uri): array
+    public function getProductPropertiesByHTML(Crawler $crawler): array
     {
-        $crawler = $this->client->get($uri);
         $help_table = $crawler->filter("#help_table td.op01 table > tr")->each(function (Crawler $node) {
             return $node;
         });
+
+        if (!$help_table) {
+            return [];
+        }
 
         $properties = [
             'Основное' => ['title' => 'Основное', 'items' => []]

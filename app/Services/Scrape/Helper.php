@@ -6,6 +6,7 @@ namespace App\Services\Scrape;
 use App\Services\Scrape\Entity\Category;
 use App\Services\Scrape\Parser\AbstractParser;
 use App\Services\Scrape\ValueObject\Product;
+use Symfony\Component\DomCrawler\Crawler;
 use Webmozart\Assert\Assert;
 
 final class Helper
@@ -107,6 +108,31 @@ final class Helper
         ?AbstractParser $parser = null,
     ): array
     {
-        return [];
+        if (!$data = Persist::load($product->getProductPath($category))) {
+            Assert::notNull($parser);
+
+            $htmlProductPath = $product->getHTMLProductPath($category);
+            if (($html = Persist::loadRaw($htmlProductPath)) === null) {
+                Assert::notNull($parser);
+
+                $html = @file_get_contents($product->getLink());
+                Assert::stringNotEmpty($html);
+
+                Persist::saveRaw($htmlProductPath, $html);
+            }
+
+            $crawler = new Crawler($html, (new EKatalogParser())->url);
+            try {
+                $data = $parser->setCrawler($crawler)->getData();
+            } catch (\Throwable $e) {
+                var_dump(date('r'), $category, $product);
+
+                throw $e;
+            }
+
+            Persist::save($product->getProductPath($category), $data);
+        }
+
+        return $data;
     }
 }

@@ -90,20 +90,27 @@ class ScraperRun extends Command
             $model = Helper::getCategoryModelData($item, $parser, 'wiz_char.php?id=' . $item->getId());
             if (!$model) {
                 dd('broken_model', $item);
+            } elseif (!isset($model['models']) || !$model['models']) {
+                continue;
             }
 
             foreach ($model['models'] as $modelData) {
                 $item->setVendor($modelData['brand']);
 
+                $this->output->writeln(sprintf(
+                    ' --- category "%s" (id: %s), vendor: %s',
+                    $item->getTitle(), $item->getId(), $item->getVendor(),
+                ));
+
                 /** @var Product[] $products */
                 $products = array_map([Product::class, 'create'], $modelData['models']);
                 foreach ($products as $product) {
-                    $data = Helper::getProductData($item, $product, $categoryParser);
-
-                    dd($data, 'todo');
+                    Helper::getProductData($item, $product, $categoryParser);
                 }
             }
         }
+
+        $this->output->writeln('done');
 
         return 0;
     }

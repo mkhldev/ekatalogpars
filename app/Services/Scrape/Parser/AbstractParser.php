@@ -9,8 +9,11 @@ use Symfony\Component\DomCrawler\Crawler;
 
 abstract class AbstractParser
 {
+    protected string $selectorProductTitleText = '';
+    protected string $selectorProductTitleOption = '';
     protected string $selectorProductNameText = '';
     protected string $selectorProductNameOption = '';
+    protected string $selectorProductDescription = '';
 
     protected Crawler|null $crawler = null;
 
@@ -66,6 +69,18 @@ abstract class AbstractParser
         $value = $this->getCrawler()->filter($selector)->text('');
 
         return ($value !== '' ? trim($value, ' ') : null);
+    }
+
+    /**
+     * Возвращает заголовок товара
+     * @return ProductName
+     */
+    public function getProductTitle(): ProductName
+    {
+        return new ProductName([
+            'text' => $this->getTextBySelector($this->selectorProductTitleText),
+            'option' => $this->getTextBySelector($this->selectorProductTitleOption),
+        ]);
     }
 
     /**
