@@ -36,6 +36,24 @@ class Product
     }
 
     /**
+     * Возвращает название товара (без названия производителя)
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    /**
+     * Возвращает ссылку на товар
+     * @return string
+     */
+    public function getLink(): string
+    {
+        return $this->link;
+    }
+
+    /**
      * Возвращать путь к JSON файлу товара
      * @param Category $category
      * @return string
